@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Category = mongoose.model("category");
 
-module.exports = app => {
+module.exports = (app) => {
   // Get all Categories
   app.get("/api/category", async (req, res) => {
     const category = await Category.find();
@@ -37,5 +37,13 @@ module.exports = app => {
     const category = await Category.findById(req.params.id);
     category.delete();
     res.send({ status: "success", messages: "delete success !!" });
+  });
+
+  app.get("/test", async (req, res) => {
+    const category = await new Category();
+    category.name = "test";
+    category.sort = 3;
+    category.save();
+    res.send({ status: "success", messages: "create success 1!!" });
   });
 };

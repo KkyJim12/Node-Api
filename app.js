@@ -9,7 +9,7 @@ const io = require("socket.io")(server);
 require("./models/User");
 require("./models/Category");
 
-mongoose.connect("mongodb://mongo:27017/testproject", {
+mongoose.connect("mongodb://localhost:27017/testproject", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useCreateIndex: true
