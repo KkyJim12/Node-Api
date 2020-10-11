@@ -5,21 +5,23 @@ const bcrypt = require("bcryptjs");
 const isAuthorized = require("../middlewares/Authorized");
 const validator = require("validator");
 
-module.exports = app => {
+module.exports = (app) => {
   app.post("/api/register", async (req, res) => {
     const checkEmail = validator.isEmail(req.body.email);
     const checkFirstname = validator.isLength(req.body.firstname, { min: 5 });
 
     if (checkEmail & checkFirstname) {
       const checkEmailExist = await User.findOne({
-        email: req.body.email
+        email: req.body.email,
       });
 
       if (checkEmailExist) {
-        res.send({ status: "fail", messages: "already have an email" });
+        res
+          .status(422)
+          .send({ status: "fail", messages: "already have an email" });
       }
 
-      const user = new User();
+      const user = await new User();
       user.firstname = req.body.firstname;
       user.lastname = req.body.lastname;
       user.email = req.body.email;
@@ -28,25 +30,27 @@ module.exports = app => {
       user.gender = req.body.gender;
       user.save();
       let token = jwt.sign({ userID: user._id }, "secret");
-      res.send({ status: "success", token: token });
+      res.send({ status: "success", token: token, data: user });
     } else {
-      res.send({ status: "fail", messages: "something went wrong" });
+      res
+        .status(422)
+        .send({ status: "fail", messages: "something went wrong" });
     }
   });
 
   app.post("/api/login", async (req, res) => {
     const login = await User.findOne({
-      email: req.body.email
+      email: req.body.email,
     });
     if (login) {
       if (bcrypt.compareSync(req.body.password, login.password)) {
         let token = jwt.sign({ userID: login._id }, "secret");
         res.send({ status: "success", token: token });
       } else {
-        res.send({ status: "password wrong" });
+        res.status(401).send({ status: "password wrong" });
       }
     } else {
-      res.send({ status: "email wrong" });
+      res.status(401).send({ status: "email wrong" });
     }
   });
 
@@ -54,7 +58,7 @@ module.exports = app => {
     const token = req.headers.authorization;
     const decoded = jwt.decode(token);
     const myInfo = await User.findOne({
-      id: decoded.userId
+      id: decoded.userId,
     });
 
     const information = {
@@ -63,17 +67,17 @@ module.exports = app => {
       lastname: myInfo.lastname,
       email: myInfo.email,
       birthday: myInfo.birthday,
-      gender: myInfo.gender
+      gender: myInfo.gender,
     };
 
-    res.json({ status: "success", data: information });
+    await res.json({ status: "success", data: information });
   });
 
   app.put("/api/change-password", isAuthorized, async (req, res) => {
     const token = req.headers.authorization;
     const decoded = jwt.decode(token);
     const myInfo = await User.findOne({
-      id: decoded.userId
+      id: decoded.userId,
     });
 
     myInfo.firstname = req.body.firstname;

@@ -30,7 +30,7 @@ require("./routes/User")(app);
 require("./routes/Category")(app);
 require("./routes/Image")(app);
 
-server.listen(80);
+server.listen(1200);
 
 io.on("connection", function(socket) {
   // connected io success
